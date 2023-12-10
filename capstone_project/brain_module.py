@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
+
 
 class ChatGPT:
     """A class to interact with OpenAI's ChatGPT model."""
@@ -15,10 +16,26 @@ class ChatGPT:
         self.api_key = os.getenv("OPENAI_API_KEY")
 
         # Set the retrieved API key for the OpenAI library
-        openai.api_key = self.api_key
+        OpenAI.api_key = self.api_key
 
         # A constant to describe the role or behavior of the chatbot
-        self.MAIN_ROLE = "This is the behavior of chatGPT"
+        self.MAIN_ROLE = "Expert Magic the gathering commander player"
+
+    def cost_calculator_for_GPT_3_5_turbo(response):
+
+        # These 2 values are valid only for the "gpt-3.5-turbo-1106" model.
+        # Check https://openai.com/pricing for up-to-date prices
+        cost_of_input_tokens = 0.001
+        cost_of_output_tokens = 0.002
+
+        completion_tokens = response.model_dump()['usage']['completion_tokens']
+        prompt_tokens = response.model_dump()['usage']['prompt_tokens']
+
+        total_cost = (
+            (prompt_tokens * cost_of_input_tokens) + (completion_tokens * cost_of_output_tokens)
+        ) / 1000
+
+        return f"Total cost for API call: ${total_cost} USD"
 
     def request_openai(self, message, role="system"):
         """
@@ -32,16 +49,17 @@ class ChatGPT:
         - str: The response content from the OpenAI API.
         """
 
+        client = OpenAI()
+
         # Create a chat completion with the provided message and role
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": role, "content": message}]
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo-1106",
+            messages=[{"role": role, "content": message}],
+            response_format={"type": "json_object"},
         )
 
-        # Return the message content from the API response
-        return response["choices"][0]["message"]["content"]
+        print(ChatGPT.cost_calculator_for_GPT_3_5_turbo(response))
 
-# If you need to test or use this directly, you can do:
-# if __name__ == "__main__":
-#     chat_gpt = ChatGPT()
-#     print(chat_gpt.request_openai("Hello!"))
+        # Return the message content from the API response
+        return response.choices[0].message.content
+
