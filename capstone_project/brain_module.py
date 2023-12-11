@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import os
+import json
 from openai import OpenAI
 from dotenv import load_dotenv
-
 
 class ChatGPT:
     """A class to interact with OpenAI's ChatGPT model."""
@@ -28,8 +28,8 @@ class ChatGPT:
         cost_of_input_tokens = 0.001
         cost_of_output_tokens = 0.002
 
-        completion_tokens = response.model_dump()['usage']['completion_tokens']
-        prompt_tokens = response.model_dump()['usage']['prompt_tokens']
+        completion_tokens = response.model_dump()["usage"]["completion_tokens"]
+        prompt_tokens = response.model_dump()["usage"]["prompt_tokens"]
 
         total_cost = (
             (prompt_tokens * cost_of_input_tokens) + (completion_tokens * cost_of_output_tokens)
@@ -62,4 +62,38 @@ class ChatGPT:
 
         # Return the message content from the API response
         return response.choices[0].message.content
+
+
+class MagicCommanderDeck:
+    def __init__(self):
+        self.commander = "Atraxa, Praetors' Voice",
+        self.budget = "100 usd"
+        self.deck_list = []
+        
+    def commander_name(self):
+        return self.commander
+
+    def deck_list_to_string(self):
+        separator = ", " 
+        result = separator.join(self.deck_list) 
+        return result
+    
+    def process_deck_file(self, file_name):
+        try: 
+            with open(file_name, "r") as file: 
+                # Load Json
+                data = json.load(file)
+            
+                # Process file
+                self.commander = data["commander"]
+                self.deck_list = data["deck_list"]
+            # Close file    
+            file.close()
+        
+        except FileNotFoundError: 
+            print("File not found.") 
+            
+        except IOError: 
+            print("Error while opening the file.") 
+
 
